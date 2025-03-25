@@ -10,7 +10,6 @@ import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /**
  * AnotherAudioRecorderPlugin
@@ -19,18 +18,6 @@ public class AnotherAudioRecorderPlugin implements FlutterPlugin, ActivityAware 
 
     private MethodChannel methodChannel;
     private MethodCallHandlerImpl methodCallHandler;
-
-    /**
-     * Plugin registration.
-     */
-    public static void registerWith(Registrar registrar) {
-        final AnotherAudioRecorderPlugin plugin = new AnotherAudioRecorderPlugin();
-        plugin.initialize(registrar.context(), registrar.messenger());
-
-        if (registrar.activeContext() instanceof Activity) {
-            plugin.startListeningToActivity(registrar.activity(), registrar::addRequestPermissionsResultListener);
-        }
-    }
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
@@ -69,8 +56,10 @@ public class AnotherAudioRecorderPlugin implements FlutterPlugin, ActivityAware 
     }
 
     private void destroy() {
-        methodChannel.setMethodCallHandler(null);
-        methodChannel = null;
+        if (methodChannel != null) {
+            methodChannel.setMethodCallHandler(null);
+            methodChannel = null;
+        }
         methodCallHandler = null;
     }
 
