@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   path_provider: ^2.0.9
-  file: ^7.0.0
+  file: ^7.0.1
   audioplayers: ^5.2.1
 
 

@@ -169,10 +169,10 @@ public class AACRecordThread extends RecordThread {
         if ((mediaCodec == null) || !status.equals("recording") ) {
             return false; // Early exit if codec is not in the correct state
         }
-
         byte[] audioRecordData = new byte[bufferSize];
         int length = audioRecord.read(audioRecordData, 0, audioRecordData.length);
         if (length > 0) {
+            updatePowers(audioRecordData);
             try {
                 int codecInputBufferIndex = mediaCodec.dequeueInputBuffer(10000);
                 if (codecInputBufferIndex >= 0) {
@@ -256,19 +256,43 @@ public class AACRecordThread extends RecordThread {
 
     private void updatePowers(byte[] bdata) {
         short[] data = byte2short(bdata);
-        short sampleVal = data[data.length - 1];
+        
+        // Find maximum amplitude and calculate sum for RMS
+        double sum = 0;
+        short maxSample = 0;
+        
+        for (short sample : data) {
+            short absValue = (short) Math.abs(sample);
+            sum += absValue * absValue;
+            if (absValue > maxSample) {
+                maxSample = absValue;
+            }
+        }
+        
         String[] escapeStatusList = new String[]{"paused", "stopped", "initialized", "unset"};
-
-        if (sampleVal == 0 || Arrays.asList(escapeStatusList).contains(status)) {
+        
+        if (data.length == 0 || maxSample == 0 || Arrays.asList(escapeStatusList).contains(status)) {
+            peakPower = -120;
             averagePower = -120; // to match iOS silent case
         } else {
-            // iOS factor : to match iOS power level
+            // Calculate RMS (Root Mean Square)
+            double rms = Math.sqrt(sum / data.length);
+            
+            // iOS uses a dB scale that typically ranges from -160 to 0
+            // We'll adjust our scale to match
+            // The 0.25 factor helps to match iOS values
             double iOSFactor = 0.25;
-            averagePower = 20 * Math.log(Math.abs(sampleVal) / 32768.0) * iOSFactor;
+            
+            // Convert to dB scale (20 * log10(value/max_value))
+            peakPower = 20 * Math.log10(maxSample / 32768.0) * iOSFactor;
+            averagePower = 20 * Math.log10(rms / 32768.0) * iOSFactor;
         }
-
-        peakPower = averagePower;
-        // Log.d(LOG_NAME, "Peak: " + mPeakPower + " average: "+ mAveragePower);
+        
+        // Track data size for duration calculation
+        dataSize += data.length;
+        
+        // Uncomment for debugging
+        // Log.d(TAG, "Peak: " + peakPower + " average: " + averagePower);
     }
 
     private short[] byte2short(byte[] bData) {

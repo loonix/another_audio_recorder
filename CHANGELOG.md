@@ -1,3 +1,19 @@
+## 1.1.3
+
+### Fix for AAC Recording Metering (Issue #15)
+- AAC recording metering values now properly update during recording
+- Fixed an issue where peakPower and averagePower remained at -120 in AAC format
+
+#### Improvements
+
+- Added proper implementation of updatePowers() method in AACRecordThread.java
+- Calculation now uses all audio samples to determine true peak and RMS values
+- Applied proper dB scale with iOS compatibility factor
+- Better silent case detection
+
+### Build fix for deprecated PluginRegistry.Registrar (cf587ee)
+
+* Fix Build error caused by deprecated PluginRegistry.Registrar (thanks to @Coder-Manuel)
 
 ## 1.1.2
 * Reverted some changes from 1.1.1
