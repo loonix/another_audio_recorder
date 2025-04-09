@@ -1,4 +1,4 @@
-## 1.1.3
+## 1.3.0
 
 ### Fix for AAC Recording Metering (Issue #15)
 - AAC recording metering values now properly update during recording
@@ -21,6 +21,7 @@
 ## 1.1.1 - Android Build Busted - DO NOT USE
 Breaking changes:
 * Android SDK version updated to 34
+Commits:
 * Fix to #10 - https://github.com/loonix/another_audio_recorder/pull/10
 
 
